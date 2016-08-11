@@ -918,6 +918,178 @@
 		return allContracts, nil 
 	}
 	
+	func (t *SimpleChaincode) updateKYCRecord(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+		//need one arg
+		if len(args) != 1 {
+			fmt.Println("error invalid arguments")
+			return nil, errors.New("Incorrect number of arguments. Expecting update KYC record")
+		}
+
+		var cp CP
+		var ExistingCP CP
+		var err error 
+		var bankcontract BANKCONTRACT
+		
+		
+		//=============Unmarshling Recieved Data===========
+		fmt.Println("Unmarshalling CP")
+		err = json.Unmarshal([]byte(args[0]), &cp)
+		if err != nil {
+			fmt.Println("error invalid update KYC Request")
+			return nil, errors.New("Invalid update KYC Request")
+		}
+		
+		
+		//===========Getting Existing Data=================
+		fmt.Println("Getting State on CP " + cp.CUSIP)
+		cpRxBytes, err := stub.GetState(cpPrefix+cp.CUSIP)
+		if err != nil {
+			fmt.Println("Error Getting state of CUSIP - " + cp.CUSIP)
+			return nil, errors.New("Error Getting state of CUSIP " + cp.CUSIP)
+		}
+		
+		//===========Unmarshel Existing Data===============
+		err = json.Unmarshal(cpRxBytes, &ExistingCP)
+		if err != nil {
+			fmt.Println("Error Unmarshalling Existing CUSIP Data")
+			return nil, errors.New("Error Unmarshalling Existing CUSIP Data " + ExistingCP.Contract)
+		}
+		
+		//============Getting Bank Contract================
+		fmt.Println("Getting state of Bank Contract- " + ExistingCP.Contract)
+		contractBytes, err := stub.GetState(ExistingCP.Contract)
+		if err != nil {
+			fmt.Println("Error Getting state of Contract - " + ExistingCP.Contract)
+			return nil, errors.New("Error retrieving contract " + ExistingCP.Contract)
+		}
+		
+		//===========Unmarshel Bank Contract================
+		err = json.Unmarshal(contractBytes, &bankcontract)
+		if err != nil {
+			fmt.Println("Error Unmarshalling Bank Contract")
+			return nil, errors.New("Error retrieving Bank Contract " + ExistingCP.Contract)
+		}
+		fmt.Println("-----------------Everything goes fine-------------")
+		
+		//============Split Bank Validators=================
+		validators := strings.Split(bankcontract.BANKVALIDATORS, ",")
+		
+		//============Update Data===========================
+		cp.CUSIP = ExistingCP.CUSIP
+		cp.Contract = ExistingCP.Contract
+		cp.Owner = validators[0]
+		cp.Fmrdata = ExistingCP.Fmrdata
+		cp.Filename = ExistingCP.Filename
+		cp.Issuer = ExistingCP.Issuer
+		cp.IssueDate = ExistingCP.IssueDate
+		
+		//===============Marshling Update Data==============
+		fmt.Println("Marshalling CP bytes")
+		cpBytes, err := json.Marshal(&cp)
+		if err != nil {
+			fmt.Println("Error marshalling cp")
+			return nil, errors.New("Error updating KYC Record")
+		}
+		err = stub.PutState(cpPrefix+cp.CUSIP, cpBytes)
+		if err != nil {
+			fmt.Println("Error issuing paper")
+			return nil, errors.New("Error issuing commercial paper")
+		}
+		
+		
+		
+		
+		
+		
+		//get account prefix
+	/*	fmt.Println("Getting state of - " + accountPrefix + cp.Issuer)
+		accountBytes, err := stub.GetState(accountPrefix + cp.Issuer)
+		if err != nil {
+			fmt.Println("Error Getting state of - " + accountPrefix + cp.Issuer)
+			return nil, errors.New("Error retrieving account " + cp.Issuer)
+		}
+		err = json.Unmarshal(accountBytes, &account)
+		if err != nil {
+			fmt.Println("Error Unmarshalling accountBytes")
+			return nil, errors.New("Error retrieving account " + cp.Issuer)
+		}
+		fmt.Println("-----------------Everything goes fine-------------")
+		
+		account.AssetsIds = append(account.AssetsIds, cp.CUSIP)
+	
+		// Set the issuer to be the owner of all quantity
+		
+
+		suffix, err := generateCUSIPSuffix(cp.IssueDate, cp.Age)
+		if err != nil {
+			fmt.Println("Error generating cusip")
+			return nil, errors.New("Error generating CUSIP")
+		}
+		fmt.Println("Marshalling CP bytes")
+		cp.CUSIP = account.Prefix + suffix
+		fmt.Println("-----------------Everything goes fine-------------")
+		
+			err = stub.PutState(cpPrefix+cp.CUSIP, cpBytes)
+			if err != nil {
+				fmt.Println("Error issuing paper")
+				return nil, errors.New("Error issuing commercial paper")
+			}
+
+			fmt.Println("Marshalling account bytes to write")
+			accountBytesToWrite, err := json.Marshal(&account)
+			if err != nil {
+				fmt.Println("Error marshalling account")
+				return nil, errors.New("Error issuing commercial paper")
+			}
+			err = stub.PutState(accountPrefix + cp.Issuer, accountBytesToWrite)
+			if err != nil {
+				fmt.Println("Error putting state on accountBytesToWrite")
+				return nil, errors.New("Error issuing commercial paper")
+			}
+			
+			
+			// Update the paper keys by adding the new key
+			fmt.Println("Getting Paper Keys")
+			keysBytes, err := stub.GetState("PaperKeys")
+			if err != nil {
+				fmt.Println("Error retrieving paper keys")
+				return nil, errors.New("Error retrieving paper keys")
+			}
+			var keys []string
+			err = json.Unmarshal(keysBytes, &keys)
+			if err != nil {
+				fmt.Println("Error unmarshel keys")
+				return nil, errors.New("Error unmarshalling paper keys ")
+			}
+			
+			fmt.Println("Appending the new key to Paper Keys")
+			foundKey := false
+			for _, key := range keys {
+				if key == cpPrefix+cp.CUSIP {
+					foundKey = true
+				}
+			}
+			if foundKey == false {
+				keys = append(keys, cpPrefix+cp.CUSIP)
+				keysBytesToWrite, err := json.Marshal(&keys)
+				if err != nil {
+					fmt.Println("Error marshalling keys")
+					return nil, errors.New("Error marshalling the keys")
+				}
+				fmt.Println("Put state on PaperKeys")
+				err = stub.PutState("PaperKeys", keysBytesToWrite)
+				if err != nil {
+					fmt.Println("Error writting keys back")
+					return nil, errors.New("Error writing the keys back")
+				}
+			} */
+			fmt.Println("--------------------------------------------------------Everything goes fine--------------------------------------------")
+			fmt.Println("Issue commercial paper %+v\n", cp)
+			return nil, nil
+			return nil, nil
+		} 
+
+	
 	
 	func (t *SimpleChaincode) Run(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 		fmt.Println("run is running " + function)
@@ -935,6 +1107,10 @@
 			fmt.Println("Firing issueBankContract")
 			//Create an asset with some value
 			return t.issueBankContract(stub, args)
+		} else if function == "updateKYCRecord" {
+			fmt.Println("Firing updateKYCRecord")
+			//Create an asset with some value
+			return t.updateKYCRecord(stub, args)
 		} else if function == "transferPaper" {
 			fmt.Println("Firing cretransferPaperateAccounts")
 			return t.transferPaper(stub, args)
