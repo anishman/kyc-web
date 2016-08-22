@@ -104,6 +104,7 @@
 		BANKNAME     	 string  `json:"bName"`
 		BANKVALIDATORS   string  `json:"bValidators"`
 		COMMISSION       string  `json:"bCommission"`
+		UPDATECOMMISSION string  `json:"updateCommission"`
 	}
 
 	type Account struct {
