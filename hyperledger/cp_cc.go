@@ -718,6 +718,9 @@
 		bankcontractRxBytes, err := stub.GetState(bankcontract.CONTRACTID)
 		if bankcontractRxBytes == nil {
 			fmt.Println("Bank contract does not exist, creating it")
+			} else {
+			fmt.Println("Bank contract exists, updating it")
+			}
 			bankcontractBytes, err := json.Marshal(&bankcontract)
 			if err != nil {
 				fmt.Println("Error marshalling Bank Contract")
@@ -767,9 +770,10 @@
 			fmt.Println("--------------------------------------------------------Everything goes fine--------------------------------------------")
 			fmt.Println("Issue Bank Contract %+v\n", bankcontract)
 			return nil, nil
-		} 
-		return nil, nil
 	}
+	
+	
+	
 	
 	
 	
