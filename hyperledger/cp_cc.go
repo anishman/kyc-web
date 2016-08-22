@@ -597,10 +597,18 @@
 			fmt.Println("Error unmarshalling account " + tr.ToCompany)
 			return nil, errors.New("Error unmarshalling account " + tr.ToCompany)
 		}	
-			
-			commissionToBeTransferred, err := strconv.ParseFloat(bankcontract.COMMISSION, 64)
-			if err != nil {
-				fmt.Println("Error while parsing Bank Commission")
+		
+		//Check if Record is new or updated 	
+			if cp.RecordType == "new" {
+				commissionToBeTransferred, err := strconv.ParseFloat(bankcontract.COMMISSION, 64)
+				if err != nil {
+					fmt.Println("Error while parsing Bank Commission")
+				}
+			} else {
+				commissionToBeTransferred, err := strconv.ParseFloat(bankcontract.UPDATECOMMISSION, 64)
+				if err != nil {
+					fmt.Println("Error while parsing Bank Update Commission")
+				}
 			}
 			amountToBeTransferred := commissionToBeTransferred
 			
