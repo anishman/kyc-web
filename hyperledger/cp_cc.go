@@ -520,6 +520,7 @@
 		fmt.Println("---------------------transferPaper--------------part1---------success---")
 		// Get Data of CUSIP from Blockchain
 		var cp CP
+		var commission string
 		fmt.Println("Unmarshalling CP " + tr.CUSIP)
 		err = json.Unmarshal(cpBytes, &cp)
 		if err != nil {
@@ -597,19 +598,16 @@
 			fmt.Println("Error unmarshalling account " + tr.ToCompany)
 			return nil, errors.New("Error unmarshalling account " + tr.ToCompany)
 		}	
-		
 		//Check if Record is new or updated 	
 			if cp.RecordType == "new" {
-				commissionToBeTransferred, err := strconv.ParseFloat(bankcontract.COMMISSION, 64)
+				commission = bankcontract.COMMISSION
+			} else {
+				commission = bankcontract.UPDATECOMMISSION
+			}
+			commissionToBeTransferred, err := strconv.ParseFloat(commission, 64)
 				if err != nil {
 					fmt.Println("Error while parsing Bank Commission")
 				}
-			} else {
-				commissionToBeTransferred, err := strconv.ParseFloat(bankcontract.UPDATECOMMISSION, 64)
-				if err != nil {
-					fmt.Println("Error while parsing Bank Update Commission")
-				}
-			}
 			amountToBeTransferred := commissionToBeTransferred
 			
 			// If toCompany doesn't have enough cash to buy the papers
