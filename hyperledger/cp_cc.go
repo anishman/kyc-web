@@ -100,6 +100,11 @@
 		IssueDate string  `json:"issueDate"`
 	}
 	
+	type REJECTKYC struct {
+		CUSIP	string	`json:"CUSIP"`
+		REASON	string	`json:"rejectReason"`
+	}
+	
 	type BANKCONTRACT struct {
 		CONTRACTID		 string  `json:"conractid"`
 		BANKID   		 string  `json:"bID"`
@@ -1102,7 +1107,59 @@
 			return nil, nil
 		} 
 
-	
+	func (t *SimpleChaincode) rejectKyc(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
+	fmt.Println("--------------In rejectKyc-------------")
+
+	//need one arg
+		if len(args) != 1 {
+			return nil, errors.New("Incorrect number of arguments. Expecting KYC record")
+		}
+		var rejectKyc REJECTKYC
+		// Getting user input
+		fmt.Println("Unmarshalling Reject KYC Record")
+		err := json.Unmarshal([]byte(args[0]), &rejectKyc)
+		if err != nil {
+			fmt.Println("Error Unmarshalling Reject KYC Record")
+			return nil, errors.New("Invalid KYC Rejection Request")
+		}
+		// Get state of CUSIP given by User
+		fmt.Println("Getting State on CP " + rejectKyc.CUSIP)
+		cpBytes, err := stub.GetState(cpPrefix+rejectKyc.CUSIP)
+		if err != nil {
+			fmt.Println("CUSIP not found")
+			return nil, errors.New("CUSIP not found " + rejectKyc.CUSIP)
+		}
+		// Get Data of CUSIP from Blockchain
+		var cp CP
+		fmt.Println("Unmarshalling CP " + rejectKyc.CUSIP)
+		err = json.Unmarshal(cpBytes, &cp)
+		if err != nil {
+			fmt.Println("Error unmarshalling cp " + rejectKyc.CUSIP)
+			return nil, errors.New("Error unmarshalling cp " + rejectKyc.CUSIP)
+		}
+
+
+		// KYC Record to Write with Rejection Message and Transfer it back to VLE
+		cp.RecordType = "Rejected"
+		cp.RejectReason = rejectKyc.REASON
+		cp.Owner = cp.Issuer
+		cpBytesToWrite, err := json.Marshal(&cp)
+		if err != nil {
+			fmt.Println("Error marshalling the cp")
+			return nil, errors.New("Error marshalling the cp")
+		}
+		fmt.Println("Put state on CP")
+		err = stub.PutState(cpPrefix+rejectKyc.CUSIP, cpBytesToWrite)
+		if err != nil {
+			fmt.Println("Error writing the cp back")
+			return nil, errors.New("Error writing the cp back")
+		}
+		
+		fmt.Println("Successfully completed Invoke of Reject KYC") 
+		return nil, nil
+	}
+
+
 	
 	func (t *SimpleChaincode) Run(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 		fmt.Println("run is running " + function)
@@ -1124,6 +1181,10 @@
 			fmt.Println("Firing updateKYCRecord")
 			//Create an asset with some value
 			return t.updateKYCRecord(stub, args)
+		} else if function == "rejectKyc" {
+			fmt.Println("Firing rejectKyc")
+			//Create an asset with some value
+			return t.rejectKyc(stub, args)
 		} else if function == "transferPaper" {
 			fmt.Println("Firing cretransferPaperateAccounts")
 			return t.transferPaper(stub, args)
