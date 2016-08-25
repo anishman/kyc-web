@@ -94,6 +94,7 @@
 		Fmrdata	  string  `json:"fmrdata"`
 		Owner     string  `json:"owner"`
 		RecordType     string  `json:"recordType"`
+		RejectReason   string  `json:"rejectReason"`
 		Filename  string  `json:"filename"`
 		Issuer    string  `json:"issuer"`
 		IssueDate string  `json:"issueDate"`
