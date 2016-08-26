@@ -1108,7 +1108,7 @@
 		} 
 
 	func (t *SimpleChaincode) rejectKyc(stub *shim.ChaincodeStub, args []string) ([]byte, error) {
-	fmt.Println("--------------In rejectKyc-------------")
+	fmt.Println("----------------In rejectKyc---------------")
 
 	//need one arg
 		if len(args) != 1 {
