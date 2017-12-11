@@ -131,13 +131,24 @@
 
 	func (t *SimpleChaincode) Init(stub *shim.ChaincodeStub, function string, args []string) ([]byte, error) {
 		// Initialize the collection of commercial paper keys
-		fmt.Println("Initializing paper keys collection")
 		var blank []string
 		blankBytes, _ := json.Marshal(&blank)
-		err := stub.PutState("PaperKeys", blankBytes)
-		if err != nil {
-			fmt.Println("Failed to initialize paper key collection")
-		}
+		keysBytes, err := stub.GetState("PaperKeys")
+			if err != nil {
+				fmt.Println("-----No Existing paper keys-----")
+				fmt.Println("Initializing paper keys collection")
+				err := stub.PutState("PaperKeys", blankBytes)
+				if err != nil {
+					fmt.Println("Failed to initialize paper key collection")
+				}
+			} else {
+				fmt.Println("-----Existing paper keys found-----")
+				err = stub.PutState("PaperKeys", keysBytes)
+				if err != nil {
+					fmt.Println("Failed to initialize paper keys with Existing data")
+				}
+			}
+
 		error := stub.PutState("BankKeys", blankBytes)
 		if error != nil {
 			fmt.Println("Failed to initialize bank key collection")
